@@ -1,14 +1,29 @@
 import User from '../models/authModels.js';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
+// Helper: generate JWT
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  });
+};
+
+// ─────────────────────────────────────────────
 // @desc    Register a new user
 // @route   POST /api/auth/register
+// @access  Public
+// ─────────────────────────────────────────────
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Please provide all fields' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters' });
     }
 
     // Check if user exists
@@ -33,6 +48,7 @@ export const registerUser = async (req, res) => {
         _id: user.id,
         name: user.name,
         email: user.email,
+        token: generateToken(user.id),
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
@@ -42,11 +58,18 @@ export const registerUser = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────
 // @desc    Login user
 // @route   POST /api/auth/login
+// @access  Public
+// ─────────────────────────────────────────────
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Please provide email and password' });
+    }
 
     // Find user by email
     const user = await User.findOne({ email });
@@ -57,6 +80,7 @@ export const loginUser = async (req, res) => {
         _id: user.id,
         name: user.name,
         email: user.email,
+        token: generateToken(user.id),
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -66,21 +90,28 @@ export const loginUser = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────
 // @desc    Google signup/login
 // @route   POST /api/auth/google
+// @access  Public
+// ─────────────────────────────────────────────
 export const googleAuth = async (req, res) => {
   try {
     const { googleId, email, name } = req.body;
 
+    if (!googleId || !email || !name) {
+      return res.status(400).json({ message: 'Google ID, email, and name are required' });
+    }
+
     let user = await User.findOne({ email });
 
     if (!user) {
-      // Create user with a strong random password because password is required in the schema
+      // Create user with a strong random password
       const randomPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8) +
         'Aa1!';
-      
+
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(randomPassword, salt);
 
@@ -102,6 +133,61 @@ export const googleAuth = async (req, res) => {
       _id: user.id,
       name: user.name,
       email: user.email,
+      token: generateToken(user.id),
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────
+// @desc    Get current logged-in user profile
+// @route   GET /api/auth/me
+// @access  Private
+// ─────────────────────────────────────────────
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────
+// @desc    Update user profile
+// @route   PUT /api/auth/me
+// @access  Private
+// ─────────────────────────────────────────────
+export const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const { name, email, password } = req.body;
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) {
+      if (password.length < 8) {
+        return res.status(400).json({ message: 'Password must be at least 8 characters' });
+      }
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      token: generateToken(updatedUser.id),
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
