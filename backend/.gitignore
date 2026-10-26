@@ -1,2 +1,23 @@
-node_modules
+node_modules/
 .env
+.env.local
+.env.*.local
+
+# Allow the example file to be committed
+!.env.example
+
+# Uploads (if audio files are stored locally)
+uploads/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+uploads/
