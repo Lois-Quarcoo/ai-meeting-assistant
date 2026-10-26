@@ -1,0 +1,23 @@
+# Development override — use with:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Changes vs production:
+#  - Uses the 'builder' stage (has nodemon + devDependencies)
+#  - Mounts source code as a live volume so changes reflect instantly
+#  - Sets NODE_ENV=development
+#  - Runs nodemon instead of node
+
+services:
+  backend:
+    build:
+      target: builder                # Use the builder stage (has devDeps + nodemon)
+    container_name: ai-meeting-backend-dev
+    command: ["npx", "nodemon", "server.js"]
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/ai-meeting-assistant
+    volumes:
+      - .:/app                       # Mount entire source so edits reflect live
+      - /app/node_modules            # Keep container's node_modules, not host's
+    ports:
+      - "5000:5000"
