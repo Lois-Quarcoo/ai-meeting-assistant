@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, Sparkles, ListChecks, ScrollText, Calendar } from 'lucide-react'
 import ActionItem from '../components/ActionItem'
+
+const card = 'bg-white/[0.04] ring-1 ring-white/10 rounded-xl shadow-lg shadow-black/40'
 
 const meeting = {
   title: 'Sprint Planning Q3',
@@ -17,48 +20,49 @@ const meeting = {
     { name: 'Mike', text: 'I will deploy the staging server on Friday morning.' },
     { name: 'Lois', text: 'Let us confirm the deployment checklist by Thursday.' },
     { name: 'John', text: 'Sounds good. Let us also make sure all tests pass before Friday.' },
-  ]
+  ],
 }
-
-const colors = ['text-purple-400', 'text-blue-400', 'text-teal-400', 'text-pink-400']
 
 function MeetingDetail() {
   const navigate = useNavigate()
 
   return (
-    <div className="relative p-6 min-h-screen overflow-hidden">
-
-      {/* Glow orbs */}
-      <div className="absolute top-[-60px] left-[100px] w-64 h-64 bg-purple-700 opacity-10 rounded-full blur-[80px] pointer-events-none" />
-      <div className="absolute bottom-[-40px] right-[60px] w-52 h-52 bg-blue-600 opacity-10 rounded-full blur-[80px] pointer-events-none" />
+    <div className="p-8 min-h-screen">
 
       {/* Back button and title */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-2">
         <button
           onClick={() => navigate('/meetings')}
-          className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white/50 text-sm hover:text-white/80 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.04] ring-1 ring-white/10 text-white/60 text-sm hover:text-white hover:ring-white/20 transition-all"
         >
-          ← Back
+          <ArrowLeft size={14} />
+          Back
         </button>
-        <h1 className="text-white text-xl font-medium tracking-tight">{meeting.title}</h1>
-        <span className="text-xs px-2.5 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/25 font-medium">
+        <h1 className="text-white text-2xl font-semibold tracking-tight">{meeting.title}</h1>
+        <span className="text-xs px-2.5 py-1 rounded-full bg-green-500/15 text-green-400 ring-1 ring-green-500/25 font-medium">
           Transcribed
         </span>
       </div>
 
-      <p className="text-white/40 text-sm mb-5">{meeting.date}</p>
+      <p className="text-white/50 text-sm mb-8 flex items-center gap-2">
+        <Calendar size={14} />
+        {meeting.date}
+      </p>
 
       {/* Top grid */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-2 gap-4 mb-4">
 
         {/* AI Summary */}
-        <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-4">
-          <p className="text-white/70 text-sm font-medium mb-3">✦ AI Summary</p>
-          <p className="text-white/60 text-sm leading-relaxed mb-4">{meeting.summary}</p>
-          <p className="text-white/50 text-xs font-medium mb-2">Participants</p>
+        <div className={`${card} p-5`}>
+          <p className="text-white text-sm font-medium mb-3 flex items-center gap-2">
+            <Sparkles size={16} className="text-blue-400" />
+            AI Summary
+          </p>
+          <p className="text-white/70 text-sm leading-relaxed mb-5">{meeting.summary}</p>
+          <p className="text-white/40 text-xs uppercase tracking-wider mb-2">Participants</p>
           <div className="flex flex-wrap gap-2">
-            {meeting.participants.map((p, i) => (
-              <span key={p} className={`text-xs px-2.5 py-1 rounded-full bg-white/[0.05] border border-white/[0.08] ${colors[i % colors.length]}`}>
+            {meeting.participants.map((p) => (
+              <span key={p} className="text-xs px-2.5 py-1 rounded-full bg-white/[0.05] ring-1 ring-white/10 text-white/80">
                 {p}
               </span>
             ))}
@@ -66,9 +70,12 @@ function MeetingDetail() {
         </div>
 
         {/* Action items */}
-        <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-4">
-          <p className="text-white/70 text-sm font-medium mb-3">✓ Action items</p>
-          <div className="flex flex-col gap-3">
+        <div className={`${card} p-5`}>
+          <p className="text-white text-sm font-medium mb-4 flex items-center gap-2">
+            <ListChecks size={16} className="text-blue-400" />
+            Action items
+          </p>
+          <div className="flex flex-col gap-4">
             {meeting.actionItems.map(({ person, task }) => (
               <ActionItem key={person} person={person} task={task} />
             ))}
@@ -77,15 +84,16 @@ function MeetingDetail() {
       </div>
 
       {/* Transcript */}
-      <div className="bg-white/[0.04] border border-white/[0.07] rounded-2xl p-4 max-h-64 overflow-y-auto">
-        <p className="text-white/70 text-sm font-medium mb-4">🗒 Transcript</p>
+      <div className={`${card} p-5 max-h-72 overflow-y-auto`}>
+        <p className="text-white text-sm font-medium mb-4 flex items-center gap-2">
+          <ScrollText size={16} className="text-blue-400" />
+          Transcript
+        </p>
         <div className="flex flex-col gap-4">
           {meeting.transcript.map(({ name, text }, i) => (
             <div key={i}>
-              <p className={`text-xs font-medium mb-1 ${colors[meeting.participants.indexOf(name) % colors.length]}`}>
-                {name}
-              </p>
-              <p className="text-white/55 text-sm leading-relaxed">{text}</p>
+              <p className="text-blue-400 text-xs font-medium mb-1">{name}</p>
+              <p className="text-white/70 text-sm leading-relaxed">{text}</p>
             </div>
           ))}
         </div>
