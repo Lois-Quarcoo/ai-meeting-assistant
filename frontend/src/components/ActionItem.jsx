@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Check } from 'lucide-react'
 
 function ActionItem({ person, task }) {
   const [done, setDone] = useState(false)
@@ -8,15 +9,15 @@ function ActionItem({ person, task }) {
       onClick={() => setDone(!done)}
       className="flex items-start gap-3 cursor-pointer group"
     >
-      <div className={`w-4 h-4 mt-0.5 rounded-md border flex items-center justify-center text-[10px] flex-shrink-0 transition-all ${
+      <div className={`w-5 h-5 mt-0.5 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${
         done
-          ? 'bg-purple-600 border-purple-600 text-white'
-          : 'border-white/20 group-hover:border-purple-400'
+          ? 'bg-blue-600 shadow-md shadow-blue-600/40'
+          : 'ring-1 ring-white/20 group-hover:ring-blue-400'
       }`}>
-        {done && '✓'}
+        {done && <Check size={12} className="text-white" strokeWidth={3} />}
       </div>
-      <p className={`text-sm transition-all ${done ? 'text-white/25 line-through' : 'text-white/60'}`}>
-        <span className="text-white font-medium">{person}</span> → {task}
+      <p className={`text-sm transition-all ${done ? 'text-white/30 line-through' : 'text-white/70'}`}>
+        <span className={done ? 'text-white/40' : 'text-white font-medium'}>{person}</span> → {task}
       </p>
     </div>
   )
